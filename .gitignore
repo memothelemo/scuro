@@ -4,3 +4,6 @@ node_modules
 
 # Lines of code
 out
+
+# Private stuff
+private
