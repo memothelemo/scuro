@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+	"allowSyntheticDefaultImports": true,
+	"preserveSymlinks": true,
+	"downlevelIteration": true,
+	"baseUrl": "src",
+	"rootDir": "src",
+	"outDir": "dist"
+  }
+}

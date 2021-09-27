@@ -1,0 +1,30 @@
+{
+  "name": "scuro",
+  "version": "0.0.1",
+  "description": "Lua 5.1 interpreter",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test:parser": "node dist/Shared/test/parser.js",
+    "watch": "tsc --w"
+  },
+  "keywords": [],
+  "author": "memothelemo",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.9.6",
+    "@types/uuid": "^8.3.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "charcodes": "^0.2.0",
+    "uuid": "^8.3.2"
+  }
+}

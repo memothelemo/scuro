@@ -1,0 +1,6 @@
+# Built directories
+dist
+node_modules
+
+# Lines of code
+out
