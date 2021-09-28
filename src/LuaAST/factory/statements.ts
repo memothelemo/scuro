@@ -1,11 +1,25 @@
 import {
 	Identifier,
-	TableIndexExpression,
 	Block,
 	Statement,
 	Node,
 	TextRange,
 	Expression,
+	DoStatement,
+	IfStatement,
+	GotoStatement,
+	LabelStatement,
+	ExpressionStatement,
+	BreakStatement,
+	WhileStatement,
+	RepeatStatement,
+	ReturnStatement,
+	IterationStatement,
+	AssignmentStatement,
+	GenericForStatement,
+	NumericForStatement,
+	VariableDeclarationStatement,
+	AssignmentLeftSideExpression,
 } from "LuaAST/nodes";
 import { SyntaxKind } from "LuaAST/enums";
 import {
@@ -25,35 +39,20 @@ export function createBlock(statements: Statement[], position?: TextRange) {
 }
 
 // do {new_scope} end
-export interface DoStatement extends Statement {
-	kind: SyntaxKind.DoStatement;
-	statements: Statement[];
-}
-
 export function isDoStatement(node: Node): node is DoStatement {
 	return node.kind === SyntaxKind.DoStatement;
 }
 
-export function createDoStatement(
-	statements: Statement[],
-	position?: TextRange,
-) {
+export function createDoStatement(block: Block, position?: TextRange) {
 	const statement = createNode(
 		SyntaxKind.DoStatement,
 		position,
 	) as DoStatement;
-	statement.statements = statements;
+	statement.block = block;
 	return statement;
 }
 
-// if <exp> then <block> <elseblock> end
-export interface IfStatement extends Expression {
-	kind: SyntaxKind.IfStatement;
-	condition: Expression;
-	ifBlock: Block;
-	elseBlock?: Block | IfStatement;
-}
-
+// if <exp> then <block> <elseblock> ends
 export function isIfStatement(node: Node): node is IfStatement {
 	return node.kind === SyntaxKind.IfStatement;
 }
@@ -72,11 +71,6 @@ export function createIfStatement(
 }
 
 // while <condition> do <block> end
-export interface WhileStatement extends IterationStatement {
-	kind: SyntaxKind.WhileStatement;
-	condition: Expression;
-}
-
 export function isWhileStatement(node: Node): node is WhileStatement {
 	return node.kind === SyntaxKind.WhileStatement;
 }
@@ -96,11 +90,6 @@ export function createWhileStatement(
 }
 
 // return <exp>, <exp>, ...
-export interface ReturnStatement extends Expression {
-	kind: SyntaxKind.ReturnStatement;
-	expressions: Expression[];
-}
-
 export function isReturnStatement(node: Node): node is ReturnStatement {
 	return node.kind === SyntaxKind.ReturnStatement;
 }
@@ -118,10 +107,6 @@ export function createReturnStatement(
 }
 
 // break
-export interface BreakStatement extends Expression {
-	kind: SyntaxKind.BreakStatement;
-}
-
 export function isBreakStatement(node: Node): node is BreakStatement {
 	return node.kind === SyntaxKind.BreakStatement;
 }
@@ -135,11 +120,6 @@ export function createBreakStatement(position?: TextRange) {
 }
 
 // <exp>
-export interface ExpressionStatement extends Expression {
-	kind: SyntaxKind.ExpressionStatement;
-	expression: Expression;
-}
-
 export function isExpressionStatement(node: Node): node is ExpressionStatement {
 	return node.kind === SyntaxKind.ExpressionStatement;
 }
@@ -157,11 +137,6 @@ export function createExpressionStatement(
 }
 
 // repeat <block> until <exp>
-export interface RepeatStatement extends IterationStatement {
-	kind: SyntaxKind.RepeatStatement;
-	condition: Expression;
-}
-
 export function isRepeatStatement(node: Node): node is RepeatStatement {
 	return node.kind === SyntaxKind.RepeatStatement;
 }
@@ -181,12 +156,6 @@ export function createRepeatStatement(
 }
 
 // local <id>, ... = <exp>, ...
-export interface VariableDeclarationStatement extends Expression {
-	kind: SyntaxKind.VariableDeclarationStatement;
-	left: Identifier[];
-	right?: Expression[];
-}
-
 export function isVariableDeclarationStatement(
 	node: Node,
 ): node is VariableDeclarationStatement {
@@ -208,18 +177,10 @@ export function createVariableDeclarationStatement(
 }
 
 // <exp>, ... =? <exp>?, ...?
-export type AssignmentLeftSideExpression = Identifier | TableIndexExpression;
-
 export function isAssignmentLeftSideExpression(
 	node: Node,
 ): node is AssignmentLeftSideExpression {
 	return isIdentifier(node) || isTableIndexExpression(node);
-}
-
-export interface AssignmentStatement extends Expression {
-	kind: SyntaxKind.AssignmentStatement;
-	left: AssignmentLeftSideExpression[];
-	right?: Expression[];
 }
 
 export function isAssignmentStatement(node: Node): node is AssignmentStatement {
@@ -241,10 +202,6 @@ export function createAssignmentStatement(
 }
 
 // the king of while, repeat and for statements
-export interface IterationStatement extends Expression {
-	block: Block;
-}
-
 export function isIterationStatement(node: Node): node is IterationStatement {
 	return (
 		isWhileStatement(node) ||
@@ -255,14 +212,6 @@ export function isIterationStatement(node: Node): node is IterationStatement {
 }
 
 // for <id> = <exp>, <exp>, <exp>? do <block> end
-export interface NumericForStatement extends IterationStatement {
-	kind: SyntaxKind.NumericForStatement;
-	name: Identifier;
-	startExpression: Expression;
-	limitExpression: Expression;
-	stepExpression?: Expression;
-}
-
 export function isNumericForStatement(node: Node): node is NumericForStatement {
 	return node.kind === SyntaxKind.NumericForStatement;
 }
@@ -288,12 +237,6 @@ export function createNumericForStatement(
 }
 
 // for <exp>, ... in <exp>, ... do <block> end
-export interface GenericForStatement extends IterationStatement {
-	kind: SyntaxKind.GenericForStatement;
-	names: Identifier[];
-	expressions: Expression[];
-}
-
 export function isGenericForStatement(node: Node): node is GenericForStatement {
 	return node.kind === SyntaxKind.GenericForStatement;
 }
@@ -316,11 +259,6 @@ export function createGenericForStatement(
 
 // please revise this, because i'm a lua 5.1 user
 // goto <label>
-export interface GotoStatement extends Expression {
-	kind: SyntaxKind.GotoStatement;
-	label: string;
-}
-
 export function isGotoStatement(node: Node): node is GotoStatement {
 	return node.kind === SyntaxKind.GotoStatement;
 }
@@ -335,11 +273,6 @@ export function createGotoStatement(label: string, position?: TextRange) {
 }
 
 // :: <label> ::
-export interface LabelStatement extends Expression {
-	kind: SyntaxKind.LabelStatement;
-	label: string;
-}
-
 export function isLabelStatement(node: Node): node is LabelStatement {
 	return node.kind === SyntaxKind.LabelStatement;
 }

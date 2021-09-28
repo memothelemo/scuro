@@ -44,7 +44,10 @@ export function isSourceFile(node: Node): node is SourceFile {
 	return node.kind === SyntaxKind.SourceFile;
 }
 
-export function createFile(statements: Statement[], position?: TextRange) {
+export function createSourceFile(
+	statements: Statement[],
+	position?: TextRange,
+) {
 	const sourceFile = createNode(
 		SyntaxKind.SourceFile,
 		position,

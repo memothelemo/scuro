@@ -23,6 +23,84 @@ export interface Statement extends Node {
 	_statementBrand: any;
 }
 
+export interface IterationStatement extends Statement {
+	block: Block;
+}
+
+export interface DoStatement extends Statement {
+	kind: SyntaxKind.DoStatement;
+	block: Block;
+}
+
+export interface IfStatement extends Statement {
+	kind: SyntaxKind.IfStatement;
+	condition: Expression;
+	ifBlock: Block;
+	elseBlock?: Block | IfStatement;
+}
+
+export interface WhileStatement extends IterationStatement {
+	kind: SyntaxKind.WhileStatement;
+	condition: Expression;
+}
+
+export interface ReturnStatement extends Statement {
+	kind: SyntaxKind.ReturnStatement;
+	expressions: Expression[];
+}
+
+export interface BreakStatement extends Statement {
+	kind: SyntaxKind.BreakStatement;
+}
+
+export interface RepeatStatement extends IterationStatement {
+	kind: SyntaxKind.RepeatStatement;
+	condition: Expression;
+}
+
+export interface VariableDeclarationStatement extends Statement {
+	kind: SyntaxKind.VariableDeclarationStatement;
+	left: Identifier[];
+	right?: Expression[];
+}
+
+export interface AssignmentStatement extends Statement {
+	kind: SyntaxKind.AssignmentStatement;
+	left: AssignmentLeftSideExpression[];
+	right?: Expression[];
+}
+
+export type AssignmentLeftSideExpression = Identifier | TableIndexExpression;
+
+export interface NumericForStatement extends IterationStatement {
+	kind: SyntaxKind.NumericForStatement;
+	name: Identifier;
+	startExpression: Expression;
+	limitExpression: Expression;
+	stepExpression?: Expression;
+}
+
+export interface GenericForStatement extends IterationStatement {
+	kind: SyntaxKind.GenericForStatement;
+	names: Identifier[];
+	expressions: Expression[];
+}
+
+export interface GotoStatement extends Statement {
+	kind: SyntaxKind.GotoStatement;
+	label: string;
+}
+
+export interface LabelStatement extends Statement {
+	kind: SyntaxKind.LabelStatement;
+	label: string;
+}
+
+export interface ExpressionStatement extends Statement {
+	kind: SyntaxKind.ExpressionStatement;
+	expression: Expression;
+}
+
 export interface SourceFile extends Node {
 	kind: SyntaxKind.SourceFile;
 	statements: Statement[];
