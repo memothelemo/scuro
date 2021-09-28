@@ -34,6 +34,7 @@ export enum SyntaxKind {
 	CallExpression,
 	MethodCallExpression,
 	Identifier,
+	ParenthesizedExpression,
 	TableIndexExpression,
 
 	// ---- Operators ---- //

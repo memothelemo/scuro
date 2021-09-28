@@ -25,8 +25,8 @@
     "typescript-transform-paths": "^3.3.1"
   },
   "dependencies": {
+    "@kherge/result": "^0.2.0",
     "chalk": "^4.1.2",
-    "charcodes": "^0.2.0",
     "uuid": "^8.3.2"
   }
 }

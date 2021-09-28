@@ -17,6 +17,7 @@ import {
 	TextRange,
 	Node,
 	Block,
+	ParenthesizedExpression,
 } from "LuaAST/nodes";
 import { BinaryOperator, UnaryOperator } from "LuaAST/types";
 
@@ -97,6 +98,24 @@ export function isNilKeyword(node: Node): node is NilKeyword {
 
 export function createNilKeyword(position?: TextRange) {
 	const node = createNode(SyntaxKind.NilKeyword, position) as NilKeyword;
+	return node;
+}
+
+export function isParenthesizedExpression(
+	node: Node,
+): node is ParenthesizedExpression {
+	return node.kind === SyntaxKind.ParenthesizedExpression;
+}
+
+export function createParenthesizedExpression(
+	expression: Expression,
+	position?: TextRange,
+) {
+	const node = createNode(
+		SyntaxKind.ParenthesizedExpression,
+		position,
+	) as ParenthesizedExpression;
+	node.expression = expression;
 	return node;
 }
 

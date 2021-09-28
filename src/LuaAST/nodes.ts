@@ -74,6 +74,11 @@ export interface TableFieldExpression extends Expression {
 	value: Expression;
 }
 
+export interface ParenthesizedExpression extends Expression {
+	kind: SyntaxKind.ParenthesizedExpression;
+	expression: Expression;
+}
+
 export interface TableExpression extends Expression {
 	kind: SyntaxKind.TableExpression;
 	fields: TableFieldExpression[];
