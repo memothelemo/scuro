@@ -5,7 +5,6 @@
 		"target": "ES2019",
 		"lib": ["ES2019"],
 		"strict": true,
-		"noFallthroughCasesInSwitch": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
 		"removeComments": true,

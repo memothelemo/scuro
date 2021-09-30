@@ -1,6 +1,6 @@
 import { inspect } from "util";
 import LuaAST from "LuaAST";
-import { Token, TokenKind } from "LuaParser/lexer/token";
+import { StringToken, Token, TokenKind } from "LuaParser/lexer/token";
 import { matchResult } from "Shared/utils/rustlang/result";
 import { DEFAULT_UNARY_OP_PRIORTY, OPERATOR_PRIORITY } from "./constants";
 import { getBinaryOperatorFromText } from "./constructors/getBinaryOperatorFromText";
@@ -11,10 +11,9 @@ import { ParserConfig } from "./types";
 export class Parser {
 	private ptr = 0;
 	private tokensLength = 0;
+	private tokens: Token[] = [];
 
-	public constructor(private tokens: Token[], private config: ParserConfig) {
-		this.tokensLength = tokens.length;
-	}
+	public constructor(private config: ParserConfig) {}
 
 	private isVersionGreaterThan(targetVersion: ParserConfig["version"]) {
 		// one trick heheheh
@@ -74,13 +73,6 @@ export class Parser {
 
 	private throwError(message: string): never {
 		throw message;
-	}
-
-	private toTextRange(token: Token): LuaAST.TextRange {
-		return {
-			line: token.row,
-			column: token.column,
-		};
 	}
 
 	//// parameters and arguments ////
@@ -246,11 +238,7 @@ export class Parser {
 
 	private parseShortCallExpression(token: Token, primary: LuaAST.Expression) {
 		const exp = this.parseExpression();
-		return LuaAST.factory.createCallExpression(
-			primary,
-			[exp],
-			this.toTextRange(token),
-		);
+		return LuaAST.factory.createCallExpression(primary, [exp], token);
 	}
 
 	//// simple expressions ////
@@ -258,28 +246,22 @@ export class Parser {
 		const token = this.peek(1);
 		if (this.is(TokenKind.String)) {
 			return LuaAST.factory.createStringLiteral(
-				this.next().value,
-				this.toTextRange(token),
+				(this.next() as StringToken).constant,
+				token,
 			);
 		} else if (this.is(TokenKind.Number)) {
 			return LuaAST.factory.createNumericLiteral(
 				Number(this.next().value),
-				this.toTextRange(token),
+				token,
 			);
 		} else if (this.consumeKeyword("nil")) {
-			return LuaAST.factory.createNilKeyword(this.toTextRange(token));
+			return LuaAST.factory.createNilKeyword(token);
 		} else if (this.isKeyword("false")) {
-			return LuaAST.factory.createBooleanLiteral(
-				false,
-				this.toTextRange(this.next()),
-			);
+			return LuaAST.factory.createBooleanLiteral(false, this.next());
 		} else if (this.isKeyword("true")) {
-			return LuaAST.factory.createBooleanLiteral(
-				true,
-				this.toTextRange(this.next()),
-			);
+			return LuaAST.factory.createBooleanLiteral(true, this.next());
 		} else if (this.consumeKeyword("...")) {
-			return LuaAST.factory.createDotsKeyword(this.toTextRange(token));
+			return LuaAST.factory.createDotsKeyword(token);
 		} else if (this.consumeSymbol("{")) {
 			return this.parseTable();
 		} else if (this.consumeKeyword("function")) {
@@ -346,7 +328,7 @@ export class Parser {
 						LuaAST.factory.createTableFieldExpression(
 							this.parseExpression(),
 							undefined,
-							this.toTextRange(token),
+							token,
 						),
 					);
 				}
@@ -358,7 +340,7 @@ export class Parser {
 					LuaAST.factory.createTableFieldExpression(
 						this.parseExpression(),
 						undefined,
-						this.toTextRange(token),
+						token,
 					),
 				);
 			}
@@ -435,7 +417,7 @@ export class Parser {
 					leftExp,
 					rightExp as unknown as LuaAST.Expression,
 					operator,
-					this.toTextRange(token),
+					token,
 				),
 			err => this.throwError(err),
 		);
@@ -450,7 +432,7 @@ export class Parser {
 				LuaAST.factory.createUnaryExpression(
 					operand as unknown as LuaAST.Expression,
 					operator,
-					this.toTextRange(token),
+					token,
 				),
 			err => this.throwError(err),
 		);
@@ -606,9 +588,8 @@ export class Parser {
 		expression: LuaAST.Expression,
 	): expression is LuaAST.AssignmentLeftSideExpression {
 		return (
-			LuaAST.factory.isAssignmentLeftSideExpression(expression) ||
-			this.isSymbol(",") ||
-			this.isSymbol("=")
+			LuaAST.factory.isAssignmentLeftSideExpression(expression) &&
+			(this.isSymbol(",") || this.isSymbol("="))
 		);
 	}
 
@@ -833,21 +814,28 @@ export class Parser {
 			this.throwError(`function <name> expected`);
 		}
 
-		const startToken = this.peek(-2);
-		const name = this.parseIdentifier();
-		const expresion = this.parseFunctionExpression();
-
 		if (isWithLocal) {
+			const name = this.parseIdentifier();
+			const expression = this.parseFunctionExpression();
 			return LuaAST.factory.createVariableDeclarationStatement(
 				[name],
-				[expresion],
+				[expression],
 				this.peek(-3),
 			);
 		}
 
+		const startToken = this.peek(-2);
+		const name = this.parseSuffixedExpression(true, false);
+
+		if (!LuaAST.factory.isAssignmentLeftSideExpression(name)) {
+			// unexpected error
+			this.throwError("Unexpected error!");
+		}
+
+		const expression = this.parseFunctionExpression();
 		return LuaAST.factory.createAssignmentStatement(
 			[name],
-			[expresion],
+			[expression],
 			startToken,
 		);
 	}
@@ -886,7 +874,8 @@ export class Parser {
 	private parseStatementList() {
 		const statementList = new Array<LuaAST.Statement>();
 		while (!this.isInEnd()) {
-			statementList.push(this.parseStatement());
+			const st = this.parseStatement();
+			statementList.push(st);
 		}
 		return statementList;
 	}
@@ -899,12 +888,27 @@ export class Parser {
 	}
 
 	//// source file ////
-	public parse() {
-		const token = this.peek();
+	public reset() {
+		// go go away
+		this.tokensLength = 0;
+		this.tokens.splice(0, this.tokens.length);
+	}
+
+	public parse(tokens: Token[]) {
+		if (this.tokens.length > 0) {
+			this.throwError(
+				`This parser is dirty, please reset them before parsing another one`,
+			);
+		}
+
+		this.tokens = tokens;
+		this.tokensLength = tokens.length;
+
 		const list = this.parseStatementList();
 		if (!this.isEof()) {
 			this.throwError(`Expected <eof>, got ${this.peek()?.value}`);
 		}
-		return LuaAST.factory.createSourceFile(list, this.toTextRange(token));
+
+		return LuaAST.factory.createSourceFile(list);
 	}
 }

@@ -2,7 +2,7 @@
   "name": "scuro",
   "version": "0.0.1",
   "description": "Lua 5.1 interpreter",
-  "main": "dist/index.js",
+  "main": "dist/SDK/index.js",
   "scripts": {
     "build": "ttsc -b",
     "test:parser": "node dist/Shared/test/parser.js",

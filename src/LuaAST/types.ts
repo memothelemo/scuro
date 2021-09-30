@@ -1,8 +1,12 @@
 import { SyntaxKind } from "LuaAST/enums";
+import { CallExpression, MethodCallExpression } from "./nodes";
 
 export type UnaryBitwiseOperator = SyntaxKind.BitwiseNotOperator;
 
 export type Operator = UnaryOperator | BinaryOperator;
+
+export type CallLikeExpression = CallExpression | MethodCallExpression;
+export type StatementLikeExpression = CallLikeExpression;
 
 export type UnaryOperator =
 	| SyntaxKind.NegationOperator

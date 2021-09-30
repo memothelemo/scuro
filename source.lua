@@ -1,6 +1,1 @@
----------------------------------
-print("Assignment test")
-
-local value = 0
-value = 1
----------------------------------
+print("Hello world!", table)

@@ -5,7 +5,7 @@ export function isNode(object: unknown): object is Node {
 	if (typeof object !== "object" && object != undefined) {
 		return false;
 	}
-	if ("kind" in (object as unknown as { kind: number })) {
+	if ((object as { kind: number }).kind !== undefined) {
 		return true;
 	}
 	return false;

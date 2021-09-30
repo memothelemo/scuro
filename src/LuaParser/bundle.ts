@@ -1,4 +1,2 @@
-import * as Parser from "LuaParser/parser/parser";
-import * as Lexer from "LuaParser/lexer/lexer";
-
-export { Parser, Lexer };
+export * from "LuaParser/parser/bundle";
+export * from "LuaParser/lexer/bundle";

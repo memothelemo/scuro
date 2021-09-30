@@ -14,6 +14,15 @@ export function wrap<T extends defined>(value: T | undefined): Option<T> {
 	return none();
 }
 
+/** Reveals Option's value either it is some or none */
+export function reveal<T extends Option<any>>(option: T) {
+	return match(
+		option,
+		v => v,
+		() => undefined,
+	);
+}
+
 /** Implementation of Option match function in rust */
 export function match<T extends Option<any>, R = void>(
 	option: T,
